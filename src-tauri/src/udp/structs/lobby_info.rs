@@ -7,24 +7,24 @@ use super::header::F1Header;
 #[repr(C, packed)]
 #[derive(Clone, Copy)]
 pub struct LobbyInfoData {
-    pub ai_controlled: u8, // 1 byte
-    pub team_id: u8, // 1 byte
-    pub nationality: u8, // 1 byte
-    pub platform: u8, // 1 byte
-    pub name: [u8; 32], // 32 bytes
-    pub car_number: u8, // 1 byte
-    pub your_telemetry: u8, // 1 byte
+    pub ai_controlled: u8,     // 1 byte
+    pub team_id: u8,           // 1 byte
+    pub nationality: u8,       // 1 byte
+    pub platform: u8,          // 1 byte
+    pub name: [u8; 32],        // 32 bytes
+    pub car_number: u8,        // 1 byte
+    pub your_telemetry: u8,    // 1 byte
     pub show_online_names: u8, // 1 byte
-    pub tech_level: u16, // 2 bytes
-    pub ready_status: u8, // 1 byte
+    pub tech_level: u16,       // 2 bytes
+    pub ready_status: u8,      // 1 byte
 }
 
 /// PacketLobbyInfoData — 954 bytes.
 #[repr(C, packed)]
 #[derive(Clone, Copy)]
 pub struct PacketLobbyInfoData {
-    pub header: F1Header, // 29 bytes
-    pub num_players: u8, // 1 byte
+    pub header: F1Header,                   // 29 bytes
+    pub num_players: u8,                    // 1 byte
     pub lobby_players: [LobbyInfoData; 22], // 924 bytes
 }
 

@@ -3,13 +3,13 @@
 
 use super::header::F1Header;
 
-/// PacketEventData — 33 bytes fixos (cabeçalho + código); dados do evento têm tamanho variável.
-/// Use `event_payload()` para obter os bytes após o código ASCII.
+/// PacketEventData — 33 bytes fixos (cabeçalho + código ASCII do evento).
 #[repr(C, packed)]
 #[derive(Clone, Copy)]
 pub struct PacketEventData {
-    pub header: F1Header, // 29 bytes
+    pub header: F1Header,           // 29 bytes
     pub event_string_code: [u8; 4], // 4 bytes
+    pub event_details: [u8; 12],    // 12 bytes
 }
 
 /// FastestLapEvent — 5 bytes.
@@ -17,7 +17,7 @@ pub struct PacketEventData {
 #[derive(Clone, Copy)]
 pub struct FastestLapEvent {
     pub vehicle_idx: u8, // 1 byte
-    pub lap_time: f32, // 4 bytes
+    pub lap_time: f32,   // 4 bytes
 }
 
 /// RetirementEvent — 2 bytes.
@@ -25,7 +25,7 @@ pub struct FastestLapEvent {
 #[derive(Clone, Copy)]
 pub struct RetirementEvent {
     pub vehicle_idx: u8, // 1 byte
-    pub reason: u8, // 1 byte
+    pub reason: u8,      // 1 byte
 }
 
 /// DRSDisabledEvent — 1 bytes.
@@ -53,25 +53,25 @@ pub struct RaceWinnerEvent {
 #[repr(C, packed)]
 #[derive(Clone, Copy)]
 pub struct PenaltyEvent {
-    pub penalty_type: u8, // 1 byte
+    pub penalty_type: u8,      // 1 byte
     pub infringement_type: u8, // 1 byte
-    pub vehicle_idx: u8, // 1 byte
+    pub vehicle_idx: u8,       // 1 byte
     pub other_vehicle_idx: u8, // 1 byte
-    pub time: u8, // 1 byte
-    pub lap_num: u8, // 1 byte
-    pub places_gained: u8, // 1 byte
+    pub time: u8,              // 1 byte
+    pub lap_num: u8,           // 1 byte
+    pub places_gained: u8,     // 1 byte
 }
 
 /// SpeedTrapEvent — 12 bytes.
 #[repr(C, packed)]
 #[derive(Clone, Copy)]
 pub struct SpeedTrapEvent {
-    pub vehicle_idx: u8, // 1 byte
-    pub speed: f32, // 4 bytes
-    pub is_overall_fastest_in_session: u8, // 1 byte
-    pub is_driver_fastest_in_session: u8, // 1 byte
+    pub vehicle_idx: u8,                    // 1 byte
+    pub speed: f32,                         // 4 bytes
+    pub is_overall_fastest_in_session: u8,  // 1 byte
+    pub is_driver_fastest_in_session: u8,   // 1 byte
     pub fastest_vehicle_idx_in_session: u8, // 1 byte
-    pub fastest_speed_in_session: f32, // 4 bytes
+    pub fastest_speed_in_session: f32,      // 4 bytes
 }
 
 /// StartLightsEvent — 1 bytes.
@@ -93,7 +93,7 @@ pub struct DriveThroughPenaltyServedEvent {
 #[derive(Clone, Copy)]
 pub struct StopGoPenaltyServedEvent {
     pub vehicle_idx: u8, // 1 byte
-    pub stop_time: f32, // 4 bytes
+    pub stop_time: f32,  // 4 bytes
 }
 
 /// FlashbackEvent — 8 bytes.
@@ -101,7 +101,7 @@ pub struct StopGoPenaltyServedEvent {
 #[derive(Clone, Copy)]
 pub struct FlashbackEvent {
     pub flashback_frame_identifier: u32, // 4 bytes
-    pub flashback_session_time: f32, // 4 bytes
+    pub flashback_session_time: f32,     // 4 bytes
 }
 
 /// ButtonsEvent — 4 bytes.
@@ -115,7 +115,7 @@ pub struct ButtonsEvent {
 #[repr(C, packed)]
 #[derive(Clone, Copy)]
 pub struct OvertakeEvent {
-    pub overtaking_vehicle_idx: u8, // 1 byte
+    pub overtaking_vehicle_idx: u8,      // 1 byte
     pub being_overtaken_vehicle_idx: u8, // 1 byte
 }
 
@@ -124,7 +124,7 @@ pub struct OvertakeEvent {
 #[derive(Clone, Copy)]
 pub struct SafetyCarEvent {
     pub safety_car_type: u8, // 1 byte
-    pub event_type: u8, // 1 byte
+    pub event_type: u8,      // 1 byte
 }
 
 /// CollisionEvent — 2 bytes.
@@ -135,7 +135,7 @@ pub struct CollisionEvent {
     pub vehicle2_idx: u8, // 1 byte
 }
 
-const _: [(); 33] = [(); core::mem::size_of::<PacketEventData>()];
+const _: [(); 45] = [(); core::mem::size_of::<PacketEventData>()];
 const _: [(); 5] = [(); core::mem::size_of::<FastestLapEvent>()];
 const _: [(); 2] = [(); core::mem::size_of::<RetirementEvent>()];
 const _: [(); 1] = [(); core::mem::size_of::<DRSDisabledEvent>()];

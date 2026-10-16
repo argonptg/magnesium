@@ -6,10 +6,10 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![ // invokes go here ----v
-            udp::connection::connect,
             utils::log::log_info,
             utils::log::log_warn,
             utils::log::log_error,
+            udp::connection::try_connect,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

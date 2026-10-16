@@ -13,7 +13,6 @@ pub const MAX_POSITION_LAPS: usize = 50;
 pub const PACKET_FORMAT: u16 = 2025;
 pub const HEADER_SIZE: usize = 29;
 
-
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PacketId {
@@ -64,17 +63,17 @@ impl TryFrom<u8> for PacketId {
 #[repr(C, packed)]
 #[derive(Clone, Copy)]
 pub struct F1Header {
-    pub packet_format: u16, // 2 bytes
-    pub game_year: u8, // 1 byte
-    pub major_version: u8, // 1 byte
-    pub minor_version: u8, // 1 byte
-    pub packet_version: u8, // 1 byte
-    pub packet_id: u8, // 1 byte
-    pub session_uid: u64, // 8 bytes
-    pub session_time: f32, // 4 bytes
-    pub frame_id: u32, // 4 bytes
-    pub ov_frame_id: u32, // 4 bytes
-    pub p_car_index: u8, // 1 byte
+    pub packet_format: u16,  // 2 bytes
+    pub game_year: u8,       // 1 byte
+    pub major_version: u8,   // 1 byte
+    pub minor_version: u8,   // 1 byte
+    pub packet_version: u8,  // 1 byte
+    pub packet_id: u8,       // 1 byte
+    pub session_uid: u64,    // 8 bytes
+    pub session_time: f32,   // 4 bytes
+    pub frame_id: u32,       // 4 bytes
+    pub ov_frame_id: u32,    // 4 bytes
+    pub p_car_index: u8,     // 1 byte
     pub sec_p_car_index: u8, // 1 byte
 }
 

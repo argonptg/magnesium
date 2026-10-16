@@ -7,9 +7,9 @@ use super::header::F1Header;
 #[repr(C, packed)]
 #[derive(Clone, Copy)]
 pub struct PacketLapPositionsData {
-    pub header: F1Header, // 29 bytes
-    pub num_laps: u8, // 1 byte
-    pub lap_start: u8, // 1 byte
+    pub header: F1Header,                         // 29 bytes
+    pub num_laps: u8,                             // 1 byte
+    pub lap_start: u8,                            // 1 byte
     pub position_for_vehicle_idx: [[u8; 22]; 50], // 1100 bytes
 }
 
