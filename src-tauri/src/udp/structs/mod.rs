@@ -1,0 +1,20 @@
+// Todos os tipos ficam disponíveis como `structs::PacketCarStatusData`, etc.
+
+pub mod header;
+pub mod motion;
+pub mod session;
+pub mod lap;
+pub mod event;
+pub mod participants;
+pub mod car_setup;
+pub mod car_telemetry;
+pub mod car_status;
+pub mod final_classification;
+pub mod lobby_info;
+pub mod car_damage;
+pub mod session_history;
+pub mod tyre_sets;
+pub mod motion_ex;
+pub mod time_trial;
+pub mod lap_positions;
+pub mod parser;
