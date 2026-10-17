@@ -1,0 +1,10 @@
+@import "../../styles/variables";
+
+#sidebar {
+    background-color: $bg-dark;
+
+    height: 100%;
+    width: 50px;
+
+    border-right: 4px solid $bg-accent;
+}
