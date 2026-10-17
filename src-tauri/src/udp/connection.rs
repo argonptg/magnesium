@@ -48,6 +48,9 @@ pub fn try_connect(app: AppHandle, ip: &str, port: u16) -> String {
         loop {
             match sock.recv_from(&mut buf) {
                 Ok((size, _src)) => {
+                    // envia um packet falando q deu bom.
+                    app.emit("udp_connected", true).unwrap();
+
                     if size < 29 {
                         log_warn("Packet is too small to contain a header, something is wrong...", true);
                         continue;
@@ -165,9 +168,9 @@ fn start_socket(ip: &str, port: u16) -> Result<UdpSocket, std::io::Error> {
     let addr = format!("{}:{}", ip, port);
 
     let socket = UdpSocket::bind(&addr)?;
-    // se demorou mais de 5 segundos, então parou de receber dados, então desconecta
+    // se demorou mais de 3 segundos, então parou de receber dados, então desconecta
     // de brinde deixa um log
-    socket.set_read_timeout(Some(std::time::Duration::from_secs(5)))
+    socket.set_read_timeout(Some(std::time::Duration::from_secs(3)))
         .unwrap();
     
     Ok(socket)
