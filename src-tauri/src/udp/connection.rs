@@ -24,7 +24,7 @@ use crate::udp::structs::FrontendPacket;
 use crate::utils::log::*;
 
 #[tauri::command]
-pub fn try_connect(app: AppHandle, ip: &str, port: u16) -> String {
+pub fn try_connect(app: AppHandle, ip: &str, port: u16) {
     let msg = format!("Connecting to UDP server at {}:{}", ip, port);
     log_info(&msg, true);
 
@@ -45,11 +45,19 @@ pub fn try_connect(app: AppHandle, ip: &str, port: u16) -> String {
         // simbora ler header
         let mut buf = [0u8; 4096]; // buffer de 4kb, se passou disso loucura
 
+        let mut recieving = false;
+        let mut timeout_count: i32 = 0;
+
         loop {
             match sock.recv_from(&mut buf) {
                 Ok((size, _src)) => {
-                    // envia um packet falando q deu bom.
-                    app.emit("udp_connected", true).unwrap();
+                    
+                    if !recieving {
+                        recieving = true;
+                        timeout_count = 0;
+                        // envia um packet falando q deu bom.
+                        app.emit("udp_connected", true).unwrap();
+                    }
 
                     if size < 29 {
                         log_warn("Packet is too small to contain a header, something is wrong...", true);
@@ -102,14 +110,28 @@ pub fn try_connect(app: AppHandle, ip: &str, port: u16) -> String {
                 }
                 Err(e) => {
                     if e.kind() == std::io::ErrorKind::WouldBlock {
-                        log_warn("No data received for 5 seconds, disconnecting...", true);
+                        match timeout_count {
+                            0..=3 => log_warn("UDP socket timed out.", true),
+                            4 => log_warn("UDP timed out 5 times. Suppressing further warnings.", true),
+                            _ => {}
+                        }
                         
-                        app.emit("udp_timeout", true).unwrap();
-                        break;
-                    } else if e.kind() == std::io::ErrorKind::TimedOut {
-                        log_warn("UDP socket timed out.", true);
+                        timeout_count = timeout_count.saturating_add(1);
 
                         app.emit("udp_timeout", true).unwrap();
+                    } else if e.kind() == std::io::ErrorKind::TimedOut {
+                        match timeout_count {
+                            0..=3 => log_warn("UDP socket timed out.", true),
+                            4 => log_warn("UDP timed out 5 times. Suppressing further warnings.", true),
+                            _ => {}
+                        }
+
+                        timeout_count = timeout_count.saturating_add(1);
+
+                        app.emit("udp_timeout", true).unwrap();                        
+                    } else {
+                        // ai deu ruim mesmo
+                        log_warn("Unknown error occurred.", true);
                         break;
                     }
                 }
@@ -117,7 +139,7 @@ pub fn try_connect(app: AppHandle, ip: &str, port: u16) -> String {
         }
     });
     
-    return "Connected to UDP server!".into();
+    // return "Connected to UDP server!".into();
 }
 
 /// Decodifica e emite um packet fixo. `read_packed` valida o tamanho exato antes

@@ -4,20 +4,16 @@
     import { listen } from "@tauri-apps/api/event";
 
     import "./Shell.scss";
-    import { invoke } from "@tauri-apps/api/core";
 
     let { children } = $props();
     let connected = $state(false);
 
-    listen("udp_connected", (event) => {
+    listen("udp_connected", () => {
         connected = true;
     })
 
-    listen("udp_timeout", async (event) => {
+    listen("udp_timeout", async () => {
         connected = false;
-
-        // try to connect again
-        await invoke("try_connect", { ip: "0.0.0.0", port: 20777 });
     })
 </script>
 
