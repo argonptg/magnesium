@@ -1,20 +1,16 @@
 <script lang="ts">
     import Navbar from "../Navbar/Navbar.svelte";
     import Sidebar from "../Sidebar/Sidebar.svelte";
-    import { listen } from "@tauri-apps/api/event";
 
     import "./Shell.scss";
+    import { udpConnection } from "$lib/stores/udp.svelte";
 
     let { children } = $props();
-    let connected = $state(false);
+    let connected = $derived(udpConnection.connected);
 
-    listen("udp_connected", () => {
-        connected = true;
-    })
-
-    listen("udp_timeout", async () => {
-        connected = false;
-    })
+    $effect(() => {
+    console.log("Connection state:", udpConnection.connected);
+});
 </script>
 
 <Sidebar/>

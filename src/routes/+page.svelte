@@ -1,23 +1,48 @@
 <script lang="ts">
-  import Card from '$lib/components/Card/Card.svelte';
-
-  import Shell from "$lib/components/Shell/Shell.svelte"
-  import "$lib/styles/global.scss"
-  import type { PacketParticipantsData } from "$lib/types/participants";
+  import Shell from "$lib/components/Shell/Shell.svelte";
+  import "$lib/styles/global.scss";
   import { onMount } from "svelte";
   import { invoke } from "@tauri-apps/api/core";
-    import CardRow from '$lib/components/CardRow/CardRow.svelte';
+  import CardRow from "$lib/components/CardRow/CardRow.svelte";
+  import { registerUdpListeners } from "$lib/services/udpListener";
 
-  onMount(async () => {
-    // try to connect
-    await invoke("try_connect", { ip: "0.0.0.0", port: 20777 });
+  onMount(() => {
+    let unlisten: (() => void) | undefined;
+    let disposed = false;
+
+    async function init() {
+      try {
+        const cleanup = await registerUdpListeners();
+
+        if (disposed) {
+          cleanup();
+          return;
+        }
+
+        unlisten = cleanup;
+
+        await invoke("try_connect", {
+          ip: "0.0.0.0",
+          port: 20777,
+        });
+      } catch (error) {
+        console.error("Failed to initialize UDP:", error);
+      }
+    }
+
+    void init();
+
+    return () => {
+      disposed = true;
+      unlisten?.();
+    };
   });
 </script>
 
 <main>
   <Shell>
-    <div class="main-content">      
-      <CardRow/>
+    <div class="main-content">
+      <CardRow />
     </div>
   </Shell>
 </main>
