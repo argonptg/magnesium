@@ -1,4 +1,4 @@
-import type { TrackDetails } from "./types/session";
+import type { TrackDetails } from "../types/session";
 
 // adoro delegar tarefas a meus camaradas I.A
 export const trackDetails: Partial<Record<number, TrackDetails>> = {
