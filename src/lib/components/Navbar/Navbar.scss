@@ -15,6 +15,32 @@
     align-items: center;
 
     #info {
-        padding-left: 24px;
+        padding-left: 50px;
+    }
+
+    span {
+        position: relative;
+        top: 1px;
+
+        &#connected::before {
+            background-color: #28ff07;
+            border-color: #26e00a;
+        }
+
+        &::before {
+            position: absolute;
+
+            content: " ";
+
+            background-color: $bg-dark;
+            border: 2px solid $bg-accent;
+            border-radius: 100%;
+
+            width: 10px;
+            height: 10px;
+
+            left: -24px;
+            top: 3px
+        }
     }
 }

@@ -12,9 +12,9 @@
     <div id="info">
         {#if connected}
             {#if sessionPacket !== null}
-                <span>F1 Connected: {trackDetails[sessionPacket.track_id]?.name} - {sessionType[sessionPacket.session_type]}</span>
+                <span id="connected">F1 Connected: {trackDetails[sessionPacket.track_id]?.name} - {sessionType[sessionPacket.session_type]}</span>
             {:else}
-                <span>F1 Connected</span>
+                <span id="connected">F1 Connected</span>
             {/if}
         {:else}
             <span>F1 Disconnected</span>
