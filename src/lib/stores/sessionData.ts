@@ -160,3 +160,16 @@ export const sessionType: Record<number, string> = {
     17: "Feature Race 3",
     18: "Time Trial",
 };
+
+export const actualTyre: Record<number, string> = {
+    7: "Inter",
+    8: "Wet",
+    15: "Wet",
+    16: "Soft",
+    17: "Medium",
+    18: "Hard",
+    19: "Super Soft",
+    20: "Soft",
+    21: "Medium",
+    22: "Hard",
+}

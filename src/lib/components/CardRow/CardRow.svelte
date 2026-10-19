@@ -1,7 +1,8 @@
 <script lang="ts">
     import Card from "../Card/Card.svelte";
     import "./CardRow.scss";
-    import { udpLap } from "$lib/stores/udp.svelte";
+    import { udpCarStatus, udpLap } from "$lib/stores/udp.svelte";
+    import { actualTyre } from "$lib/stores/sessionData";
 
     function formatDuration(totalMs: number) {
         const totalSeconds = Math.floor(totalMs / 1000);
@@ -16,36 +17,42 @@
     let laps: number[] = [];
 
     let cards = $derived.by(() => {
-        const packet = udpLap.data;
-        const player = packet?.lap_data[packet.header.p_car_index];
+        const lapPacket = udpLap.data;
+        const carPacket = udpCarStatus.data;
 
-        if (player) {
-            laps.push(player?.last_lap_time_in_ms);
+        const carNum = lapPacket?.header.p_car_index ?? 0;
+
+        const lapPlayer = lapPacket?.lap_data[carNum];
+        const carPlayer = carPacket?.car_status_data[carNum];
+
+
+        if (lapPlayer) {
+            laps.push(lapPlayer?.last_lap_time_in_ms);
             laps.sort((a, b) => a - b); // arranjo decrescente
         }
 
         return [
             {
                 title: "Lap",
-                value: player?.current_lap_num.toString() ?? "—",
+                value: lapPlayer?.current_lap_num.toString() ?? "—",
             },
             {
                 title: "Position",
-                value: player ? `P${player.car_position}` : "—",
+                value: lapPlayer ? `P${lapPlayer.car_position}` : "—",
             },
             {
                 title: "Tyre",
-                value: "—",
+                value: actualTyre[carPlayer?.actual_tyre_compound ?? 0],
             },
             {
                 title: "Last Lap Time",
-                value: player
-                    ? formatDuration(player.last_lap_time_in_ms)
+                value: lapPlayer
+                    ? formatDuration(lapPlayer.last_lap_time_in_ms)
                     : "—",
             },
             {
                 title: "Fastest Lap",
-                value: formatDuration(laps[0]) // sempre o primeiro índex é a volta mais rápida
+                value: laps.length <= 0 ? "—" : formatDuration(laps[0]) // sempre o primeiro índex é a volta mais rápida
             },
             {
                 title: "Remaining Time",

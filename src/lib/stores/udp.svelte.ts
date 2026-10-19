@@ -1,3 +1,4 @@
+import type { PacketCarStatusData } from "$lib/types/carStatus";
 import type { PacketLapData } from "$lib/types/lap";
 import type { PacketParticipantsData } from "$lib/types/participants";
 import type { PacketSessionData } from "$lib/types/session";
@@ -10,6 +11,7 @@ class PacketState<T> {
 export const udpLap = new PacketState<PacketLapData>();
 export const udpParticipant = new PacketState<PacketParticipantsData>();
 export const udpSession = new PacketState<PacketSessionData>();
+export const udpCarStatus = new PacketState<PacketCarStatusData>();
 
 // não precisa ser packetstate por motivos bem obvios
 export const udpConnection = $state({
