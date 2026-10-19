@@ -5,6 +5,7 @@
   import { invoke } from "@tauri-apps/api/core";
   import CardRow from "$lib/components/CardRow/CardRow.svelte";
   import { registerUdpListeners } from "$lib/services/udpListener";
+  import Leaderboard from "$lib/components/Leaderboard/Leaderboard.svelte";
 
   onMount(() => {
     let unlisten: (() => void) | undefined;
@@ -43,6 +44,7 @@
   <Shell>
     <div class="main-content">
       <CardRow />
+      <Leaderboard />
     </div>
   </Shell>
 </main>

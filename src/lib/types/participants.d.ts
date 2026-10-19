@@ -8,7 +8,7 @@ interface ParticipantData {
     my_team: number,                       
     race_number: number,                   
     nationality: number,                   
-    name: string,                    
+    name: number[],                    
     your_telemetry: number,                 
     show_online_names: number,              
     tech_level: number,                   
