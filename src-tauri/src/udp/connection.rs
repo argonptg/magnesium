@@ -1,30 +1,38 @@
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::net::UdpSocket;
 use std::thread;
 use tauri::{AppHandle, Emitter};
 
+use crate::udp::structs::FrontendPacket;
 use crate::udp::structs::car_damage::PacketCarDamageData;
 use crate::udp::structs::car_setup::PacketCarSetupData;
 use crate::udp::structs::car_status::PacketCarStatusData;
 use crate::udp::structs::car_telemetry::PacketCarTelemetryData;
 use crate::udp::structs::event::PacketEventData;
 use crate::udp::structs::final_classification::PacketFinalClassificationData;
-use crate::udp::structs::header::{PacketId, HEADER_SIZE, PACKET_FORMAT};
+use crate::udp::structs::header::{HEADER_SIZE, PACKET_FORMAT, PacketId};
 use crate::udp::structs::lap::PacketLapData;
 use crate::udp::structs::lap_positions::PacketLapPositionsData;
 use crate::udp::structs::lobby_info::PacketLobbyInfoData;
 use crate::udp::structs::motion::PacketMotionData;
 use crate::udp::structs::motion_ex::PacketMotionExData;
-use crate::udp::structs::parser::{expected_packet_size, read_header, read_packed, WirePod};
+use crate::udp::structs::parser::{WirePod, expected_packet_size, read_header, read_packed};
 use crate::udp::structs::participants::PacketParticipantsData;
 use crate::udp::structs::session::PacketSessionData;
 use crate::udp::structs::session_history::PacketSessionHistoryData;
 use crate::udp::structs::time_trial::PacketTimeTrialData;
 use crate::udp::structs::tyre_sets::PacketTyreSetsData;
-use crate::udp::structs::FrontendPacket;
 use crate::utils::log::*;
+
+static UDP_RUNNING: AtomicBool = AtomicBool::new(false);
 
 #[tauri::command]
 pub fn try_connect(app: AppHandle, ip: &str, port: u16) {
+    if UDP_RUNNING.swap(true, Ordering::AcqRel) {
+        log_info("UDP listener is already running.", true);
+        return; // esqueci disso kkkskksksksk
+    }
+
     let msg = format!("Connecting to UDP server at {}:{}", ip, port);
     log_info(&msg, true);
 
@@ -36,6 +44,7 @@ pub fn try_connect(app: AppHandle, ip: &str, port: u16) {
             Ok(s) => s,
             Err(e) => {
                 log_error(&format!("Failed to start UDP socket: {}", e), true);
+                UDP_RUNNING.store(false, Ordering::Release);
                 return;
             }
         };
@@ -45,25 +54,27 @@ pub fn try_connect(app: AppHandle, ip: &str, port: u16) {
         // simbora ler header
         let mut buf = [0u8; 4096]; // buffer de 4kb, se passou disso loucura
 
-        let mut recieving = false;
-        let mut timeout_count: i32 = 0;
+        let mut receiving = false;
+        let mut timeout_count = 0u8;
 
         loop {
             match sock.recv_from(&mut buf) {
                 Ok((size, _src)) => {
-                    
-                    if !recieving {
-                        recieving = true;
+                    if !receiving {
+                        receiving = true;
                         timeout_count = 0;
                         // envia um packet falando q deu bom.
                         app.emit("udp_connected", true).unwrap();
                     }
 
                     if size < 29 {
-                        log_warn("Packet is too small to contain a header, something is wrong...", true);
+                        log_warn(
+                            "Packet is too small to contain a header, something is wrong...",
+                            true,
+                        );
                         continue;
                     }
-                    
+
                     let packet = &buf[..size]; // ler só o que realmente existe
                     let header_buf = &packet[..HEADER_SIZE]; // 29 bytes do header
 
@@ -71,7 +82,7 @@ pub fn try_connect(app: AppHandle, ip: &str, port: u16) {
                         log_warn("Could not decode packet header, skipping packet...", true);
                         continue;
                     };
-                    
+
                     if header.p_car_index >= 22 {
                         log_warn("Invalid player car index, skipping packet...", true);
                         continue;
@@ -103,42 +114,48 @@ pub fn try_connect(app: AppHandle, ip: &str, port: u16) {
                         continue;
                     }
 
+                    timeout_count = 0;
+
+                    if !receiving {
+                        receiving = true;
+                        let _ = app.emit("udp_connected", true);
+                        log_info("Recieving UDP telemetry.", true);
+                    }
+
                     //let msg = format!("Packet ID = {}", header.packet_id);
                     //log_info(&msg, true);
 
                     dispatch_packet(&app, packet_id, packet); // faz a resenha
                 }
-                Err(e) => {
-                    if e.kind() == std::io::ErrorKind::WouldBlock {
-                        match timeout_count {
-                            0..=3 => log_warn("UDP socket timed out.", true),
-                            4 => log_warn("UDP timed out 5 times. Suppressing further warnings.", true),
-                            _ => {}
-                        }
-                        
-                        timeout_count = timeout_count.saturating_add(1);
-
-                        app.emit("udp_timeout", true).unwrap();
-                    } else if e.kind() == std::io::ErrorKind::TimedOut {
-                        match timeout_count {
-                            0..=3 => log_warn("UDP socket timed out.", true),
-                            4 => log_warn("UDP timed out 5 times. Suppressing further warnings.", true),
-                            _ => {}
-                        }
-
-                        timeout_count = timeout_count.saturating_add(1);
-
-                        app.emit("udp_timeout", true).unwrap();                        
-                    } else {
-                        // ai deu ruim mesmo
-                        log_warn("Unknown error occurred.", true);
-                        break;
+                Err(e)
+                    if matches!(
+                        e.kind(),
+                        std::io::ErrorKind::TimedOut | std::io::ErrorKind::WouldBlock
+                    ) =>
+                {
+                    if receiving {
+                        receiving = false;
+                        let _ = app.emit("udp_timeout", true);
                     }
+
+                    match timeout_count {
+                        0..=3 => log_warn("UDP socket timed out.", true),
+                        4 => log_warn("UDP timed out 5 times. Suppressing further warnings.", true),
+                        _ => {}
+                    }
+
+                    timeout_count = timeout_count.saturating_add(1);
+                }
+                Err(e) => {
+                    log_error(&format!("UDP socket error: {e}"), true);
+                    break;
                 }
             }
         }
+
+        UDP_RUNNING.store(false, Ordering::Release);
     });
-    
+
     // return "Connected to UDP server!".into();
 }
 
@@ -192,8 +209,9 @@ fn start_socket(ip: &str, port: u16) -> Result<UdpSocket, std::io::Error> {
     let socket = UdpSocket::bind(&addr)?;
     // se demorou mais de 3 segundos, então parou de receber dados, então desconecta
     // de brinde deixa um log
-    socket.set_read_timeout(Some(std::time::Duration::from_secs(3)))
-        .unwrap();
-    
+    socket
+        .set_read_timeout(Some(std::time::Duration::from_secs(3)))
+        ?;
+
     Ok(socket)
 }
