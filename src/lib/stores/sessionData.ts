@@ -139,6 +139,29 @@ export const trackDetails: Partial<Record<number, TrackDetails>> = {
     }
 };
 
+export const driverName: Record<string, string> = {
+    "GASLY": "Pierre Gasly",
+    "COLAPINTO": "Franco Colapinto",
+    "ALONSO": "Fernando Alonso",
+    "OCON": "Esteban Ocon",
+    "BORTOLETO": "Gabriel Bortoleto",
+    "VERSTAPPEN": "Max Verstappen",
+    "HAMILTON": "Lewis Hamilton",
+    "RUSSELL": "George Russell",
+    "SAINZ": "Carlos Sainz Jr.",
+    "TSUNODA": "Yuki Tsunoda",
+    "BEARMAN": "Oliver Bearman",
+    "NORRIS": "Lando Norris",
+    "HADJAR": "Isack Hadjar",
+    "LAWSON": "Liam Lawson",
+    "LECLERC": "Charles Leclerc",
+    "ALBON": "Alexander Albon",
+    "ANTONELLI": "Kimi Antonelli",
+    "HULKENBERG": "Nico Hulkenberg",
+    "STROLL": "Lance Stroll",
+    "PIASTRI": "Oscar Piastri"
+}
+
 export const sessionType: Record<number, string> = {
     0: "Unknown",
     1: "FP1",

@@ -5,13 +5,15 @@ import {
     udpParticipant,
     udpSession,
     udpConnection,
-    udpCarStatus
+    udpCarStatus,
+    udpSessionHistory
 } from "$lib/stores/udp.svelte";
 
 import type { PacketLapData } from "$lib/types/lap";
 import type { PacketParticipantsData } from "$lib/types/participants";
 import type { PacketSessionData } from "$lib/types/session";
 import type { PacketCarStatusData } from "$lib/types/carStatus";
+import type { PacketSessionHistoryData } from "$lib/types/sessionHistory";
 
 export const registerUdpListeners = async () => {
     const unlisteners = await Promise.all([
@@ -20,6 +22,16 @@ export const registerUdpListeners = async () => {
         }),
 
         listen<PacketSessionData>("udp_session", ({ payload }) => {
+            if (
+                udpSession.data &&
+                (
+                    udpSession.data.header.session_uid !== payload.header.session_uid ||
+                    udpSession.data.session_type !== payload.session_type
+                )
+            ) {
+                udpSessionHistory.data = null;
+            }
+        
             udpSession.data = payload;
         }),
 
@@ -34,6 +46,13 @@ export const registerUdpListeners = async () => {
         listen("udp_connected", () => {
             console.log("UDP CONNECTED EVENT RECEIVED");
             udpConnection.connected = true;
+        }),
+
+        listen<PacketSessionHistoryData>("udp_sessionhistory", ({ payload }) => {
+            udpSessionHistory.data = {
+                ...udpSessionHistory.data,
+                [payload.car_idx]: payload
+            };
         }),
 
         listen("udp_timeout", () => {

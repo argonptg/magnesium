@@ -17,5 +17,16 @@ main {
 }
 
 .main-content {
-    margin: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    margin-top: 45px;
+    padding: 16px;
+
+    z-index: 0;
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+    scrollbar-color: $bg-accent $bg;
 }
